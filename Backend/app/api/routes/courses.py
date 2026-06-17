@@ -1,0 +1,1 @@
+# GET /courses and so on
