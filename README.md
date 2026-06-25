@@ -20,7 +20,7 @@ An AI-powered academic advising platform that helps university students plan the
 
 ```bash
 # Start local Postgres
-docker run --name advisor-db -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=advisor -p 5432:5432 -d postgres:16
+docker run --name advisor-db -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=advisor -p 5433:5432 -d postgres:16
 
 # Set up Python env
 cd backend
