@@ -14,9 +14,9 @@ An AI-powered academic advising platform that helps university students plan the
 ### Prerequisites
 
 - Python 3.11+
-- Docker <- wip
+- Docker
 
-### Backend <- wip
+### Backend
 
 ```bash
 # Start local Postgres

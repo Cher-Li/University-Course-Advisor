@@ -1,60 +1,52 @@
 # GET /courses and so on
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.db.session import get_db
+from app.models.course import Course
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
-# Stub data, replaced with real DB queries later
-MOCK_COURSES = [
-    {
-        "id": "COMP250",
-        "name": "Intro to Computer Science",
-        "credits": 3,
-        "prerequisites": [],
-    },
-    {
-        "id": "COMP302",
-        "name": "Programming Languages and Paradigms",
-        "credits": 3,
-        "prerequisites": ["COMP250"],
-    },
-    {
-        "id": "COMP330",
-        "name": "Theory of Computation",
-        "credits": 3,
-        "prerequisites": ["COMP250", "MATH240"],
-    },
-    {
-        "id": "MATH240",
-        "name": "Discrete Structures",
-        "credits": 3,
-        "prerequisites": [],
-    },
-]
-
-
 @router.get("/")
-def get_courses():
+def get_courses(db: Session = Depends(get_db)):
     """Return all courses."""
-    return MOCK_COURSES
-
+    courses = db.query(Course).all()
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "credits": c.credits,
+            "description": c.description,
+        }
+        for c in courses
+    ]
 
 @router.get("/{course_id}")
-def get_course(course_id: str):
+def get_course(course_id: str, db: Session = Depends(get_db)):
     """Return a single course by ID."""
-    course = next((c for c in MOCK_COURSES if c["id"] == course_id), None)
+    course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Course not found")
-    return course
-
+    return {
+        "id": course.id,
+        "name": course.name,
+        "credits": course.credits,
+        "description": course.description,
+    }
 
 @router.get("/{course_id}/prerequisites")
-def get_prerequisites(course_id: str):
+def get_prerequisites(course_id: str, db: Session = Depends(get_db)):
     """Return the prerequisites for a course."""
-    course = next((c for c in MOCK_COURSES if c["id"] == course_id), None)
+    course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Course not found")
-    prereq_ids = course["prerequisites"]
-    prereqs = [c for c in MOCK_COURSES if c["id"] in prereq_ids]
-    return {"course_id": course_id, "prerequisites": prereqs}
+
+    prereq_ids = [p.prereq_id for p in course.prerequisites]
+    prereqs = db.query(Course).filter(Course.id.in_(prereq_ids)).all()
+
+    return {
+        "course_id": course_id,
+        "prerequisites": [
+            {"id": c.id, "name": c.name, "credits": c.credits}
+            for c in prereqs
+        ],
+    }

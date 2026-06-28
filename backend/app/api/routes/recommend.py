@@ -6,13 +6,16 @@ POST /recommend/missing -> given a target course, what prereqs missing?
 POST /recommend/all-prereqs -> all prerequisites needed for a course
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.services.prereq_graph import (
     available_courses,
     missing_prereqs,
     all_prerequisites,
 )
+from sqlalchemy.orm import Session
+from app.db.session import get_db
+
 
 router = APIRouter(prefix="/recommend", tags=["recommendations"])
 
@@ -36,24 +39,24 @@ class TargetCourseInput(BaseModel):
     }
 
 @router.post("/")
-def recommend(body: CompletedCoursesInput):
+def recommend(body: CompletedCoursesInput, db: Session = Depends(get_db)):
     """
     Given a list of completed courses, return everything the student
     is now eligible to take.
     """
-    available = available_courses(set(body.completed))
+    available = available_courses(set(body.completed), db)
     return {
         "completed": body.completed,
         "available": available,
     }
 
 @router.post("/missing")
-def missing(body: TargetCourseInput):
+def missing(body: TargetCourseInput, db: Session = Depends(get_db)):
     """
     Given a target course and completed courses, return what
     prerequisites are still needed.
     """
-    missing = missing_prereqs(body.target, set(body.completed))
+    missing = missing_prereqs(body.target, set(body.completed), db)
     return {
         "target": body.target,
         "completed": body.completed,
@@ -62,12 +65,12 @@ def missing(body: TargetCourseInput):
     }
 
 @router.post("/all-prereqs")
-def all_prereqs(body: TargetCourseInput):
+def all_prereqs(body: TargetCourseInput, db: Session = Depends(get_db)):
     """
     Recursively find every course needed to eventually take the target,
     regardless of how many levels deep.
     """
-    all_prereqs = all_prerequisites(body.target)
+    all_prereqs = all_prerequisites(body.target, db)
     still_needed = all_prereqs - set(body.completed)
     return {
         "target": body.target,
