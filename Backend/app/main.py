@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import courses, recommend
+from app.api.routes import courses, recommend, graduation
 from app.core.config import settings
 
 app = FastAPI(
