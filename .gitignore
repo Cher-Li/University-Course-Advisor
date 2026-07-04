@@ -5,5 +5,7 @@ __pycache__/
 .env
 *.db
 node_modules/
+.pytest_cache/
+chroma_db/
 
 # pip freeze > requirements.txt
