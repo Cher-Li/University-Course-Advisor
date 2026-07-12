@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.services.vector_store import search_courses
 from app.services.prereq_graph import available_courses
 
+USE_MOCK = True
 
 def get_advice(goal: str, completed: list[str], db: Session) -> str:
     """
@@ -41,6 +42,10 @@ def get_advice(goal: str, completed: list[str], db: Session) -> str:
 
     available_text = ", ".join(available) if available else "None at this time"
     completed_text = ", ".join(completed) if completed else "None"
+
+    if USE_MOCK:
+        return _mock_response(goal, completed_text, available_text, relevant_text)
+
 
     # Step 4: Call Claude
     client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
@@ -73,3 +78,23 @@ def get_advice(goal: str, completed: list[str], db: Session) -> str:
     )
 
     return message.content[0].text
+
+
+def _mock_response(goal, completed_text, available_text, relevant_text) -> str:
+    return f"""[MOCK RESPONSE]
+ 
+    Based on your goal "{goal}", here's my advice:
+    
+    Completed courses: {completed_text}
+    Currently available to you: {available_text}
+    
+    Most relevant courses for your goal:
+    {relevant_text}
+    
+    Recommended plan:
+    - Next semester: prioritize the highest-relevance courses listed above that you're eligible for
+    - Make sure prerequisites are cleared early so upper-level courses open up
+    - Aim to have core requirements done by the end of next semester
+    
+    Once the real LLM is connected, this will be a fully personalized response based on your specific situation.
+    """
