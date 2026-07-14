@@ -7,5 +7,7 @@ __pycache__/
 node_modules/
 .pytest_cache/
 chroma_db/
+frontend/dist/
+frontend/.vite/
 
 # pip freeze > requirements.txt
