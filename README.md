@@ -6,7 +6,7 @@ An AI-powered academic advising platform that helps university students plan the
 
 - **Backend**: FastAPI, PostgreSQL, SQLAlchemy
 - **AI**: RAG (Chroma, sentence-transformers), Anthropic API
-- **Frontend**: React
+- **Frontend**: React, Vite
 - **Deployment**: Docker, Render/Railway
 
 ## Setup
@@ -14,9 +14,14 @@ An AI-powered academic advising platform that helps university students plan the
 ### Prerequisites
 
 - Python 3.11+
+- Node.js 18+
 - Docker
 
-### 1. Start the database
+---
+
+### Backend
+
+#### 1. Start the database
 
 ```bash
 docker run --name advisor-db -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=advisor -p 5433:5432 -d postgres:16
@@ -28,7 +33,7 @@ If the container already exists but isn't running:
 docker start advisor-db
 ```
 
-### 2. Set up Python environment
+#### 2. Set up Python environment
 
 ```bash
 cd backend
@@ -37,13 +42,13 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Configure environment variables
+#### 3. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-### 4. Seed the database
+#### 4. Seed the database
 
 Creates the tables and populates them with course and prerequisite data:
 
@@ -51,7 +56,7 @@ Creates the tables and populates them with course and prerequisite data:
 python -m app.db.seed
 ```
 
-### 5. Build the vector store
+#### 5. Build the vector store
 
 Embeds course descriptions into Chroma for semantic search:
 
@@ -59,13 +64,34 @@ Embeds course descriptions into Chroma for semantic search:
 python -m app.db.embed
 ```
 
-### 6. Run the server
+#### 6. Run the backend server
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+
+---
+
+### Frontend
+
+#### 1. Install dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+#### 2. Start the dev server
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`.
+
+> Make sure the backend is running on port 8000 before using the frontend.
 
 ---
 
@@ -83,6 +109,7 @@ The API will be available at `http://localhost:8000`. Interactive docs at `http:
 | POST   | `/api/v1/graduation/check`           | Check graduation requirements             |
 | GET    | `/api/v1/search?q=`                  | Semantic search over course descriptions  |
 | POST   | `/api/v1/search/build`               | Rebuild the vector store                  |
+| POST   | `/api/v1/advise/`                    | Get LLM-powered academic advice           |
 
 ---
 
